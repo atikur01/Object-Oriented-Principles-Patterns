@@ -876,37 +876,162 @@ Console.WriteLine(copy.Data); // Output: Hello
 
 ## 4. UML Diagrams (Use Case, Class, and Sequence Diagrams)
 
-### 1. Use Case Diagram
+This document provides an overview of **Use Case, Class, and Sequence Diagrams** for an Online Shopping System along with C# examples.
 
-- Shows interactions between actors (users) and the system.
+---
 
+## **1. Use Case Diagram**
+
+A **Use Case Diagram** represents the interactions between users (actors) and a system. It helps in understanding system requirements.
+
+### **Example Scenario: Online Shopping System**
+
+**Actors:**
+- **Customer**: Places an order
+- **Admin**: Manages the system
+
+**Use Cases:**
+1. **Browse Products**
+2. **Place Order**
+3. **Manage Orders** (Admin)
+
+### **Use Case Diagram**
 ```
-[User] ---> (Login)
-[User] ---> (Search Item)
-[User] ---> (Checkout)
+          +---------------------+
+          |  Online Shopping    |
+          +---------------------+
+            /            \
+    +--------+        +-----------+
+    |Customer|        |   Admin   |
+    +--------+        +-----------+
+         |                |
+   --------------      ----------------
+   | Browse Products |  | Manage Orders |
+   --------------      ----------------
+         |
+  ---------------
+  | Place Order |
+  ---------------
 ```
 
-### 2. Class Diagram
+### **C# Implementation**
 
-- Shows relationships between classes.
+A simple class structure for this scenario:
 
-```java
-class Animal {
-+name: String
-+makeSound(): void
+```csharp
+public class Customer
+{
+    public string Name { get; set; }
+
+    public void BrowseProducts()
+    {
+        Console.WriteLine($"{Name} is browsing products.");
+    }
+
+    public void PlaceOrder()
+    {
+        Console.WriteLine($"{Name} has placed an order.");
+    }
 }
-class Dog extends Animal {
-+makeSound(): void
+
+public class Admin
+{
+    public void ManageOrders()
+    {
+        Console.WriteLine("Admin is managing orders.");
+    }
 }
 ```
 
-### 3. Sequence Diagram
+---
 
-- Shows interaction between objects over time.
+## **2. Class Diagram**
+
+A **Class Diagram** shows the structure of a system by representing classes, attributes, methods, and relationships.
+
+### **Class Diagram for Online Shopping**
+```
++---------------+
+|   Customer    |
++---------------+
+| - Name       |
++---------------+
+| +BrowseProducts() |
+| +PlaceOrder() |
++---------------+
+        |
+        | (uses)
+        v
++---------------+
+|   Order       |
++---------------+
+| - OrderID     |
+| - Amount      |
++---------------+
+| +ProcessOrder() |
++---------------+
+```
+
+### **C# Implementation**
+
+```csharp
+public class Order
+{
+    public int OrderID { get; set; }
+    public double Amount { get; set; }
+
+    public void ProcessOrder()
+    {
+        Console.WriteLine($"Processing Order {OrderID} with Amount {Amount}");
+    }
+}
+```
+
+---
+
+## **3. Sequence Diagram**
+
+A **Sequence Diagram** shows the interaction between objects over time.
+
+### **Sequence Diagram for "Place Order"**
+
+1. Customer selects products
+2. Customer places an order
+3. System processes the order
+4. Admin manages the order
 
 ```
-User --> LoginHandler: Enter credentials
-LoginHandler --> Database: Validate user
-Database --> LoginHandler: Return success
-LoginHandler --> User: Login success
+Customer     System      Admin
+   |            |         |
+   |-----> Browse Products ----->|
+   |            |         |
+   |-----> Place Order ----->|
+   |            |         |
+   |-----> Process Order ----->|
+   |            |         |
+   |            |-----> Manage Order ----->|
+   |            |         |
 ```
+
+### **C# Implementation**
+
+```csharp
+public class OnlineShop
+{
+    public void PlaceOrder(Customer customer, Order order, Admin admin)
+    {
+        customer.BrowseProducts();
+        customer.PlaceOrder();
+        order.ProcessOrder();
+        admin.ManageOrders();
+    }
+}
+```
+
+---
+
+### **Summary**
+
+- **Use Case Diagram**: Defines system functionalities & actors
+- **Class Diagram**: Shows class relationships
+- **Sequence Diagram**: Represents interactions in time sequence
