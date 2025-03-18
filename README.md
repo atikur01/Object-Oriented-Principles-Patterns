@@ -1,125 +1,262 @@
 # Object-Oriented Principles & Patterns
 
-## 1. Understanding SOLID Principles
+# 1. Understanding SOLID Principles
 
-SOLID is a set of five principles that help create maintainable and scalable object-oriented systems.
+The SOLID principles are five design principles that help developers create more maintainable, scalable, and flexible software. These principles are essential for object-oriented programming and are widely used in C# development.
 
-### S - Single Responsibility Principle (SRP)
+---
 
-- A class should have only one reason to change.
-- Each class should have only one responsibility.
+## **1. Single Responsibility Principle (SRP)**
+**Definition**: A class should have only one reason to change, meaning it should have only one responsibility.
 
-**Example:**
-Instead of a single `Report` class handling data storage, formatting, and printing, split these into separate classes.
+### **Example in C# (Bad Design)**
+```csharp
+public class Report
+{
+    public void GenerateReport()
+    {
+        Console.WriteLine("Generating Report...");
+    }
 
-**Bad Design (Violating SRP):**
-```java
-class Report {
-    void saveToDatabase() { /* Save logic */ }
-    void formatReport() { /* Formatting logic */ }
-    void printReport() { /* Printing logic */ }
-}
-```
-
-**Good Design (Following SRP):**
-```java
-class ReportFormatter { void formatReport() { /* Formatting logic */ } }
-class ReportPrinter { void printReport() { /* Printing logic */ } }
-class ReportRepository { void saveToDatabase() { /* Save logic */ } }
-```
-
-### O - Open/Closed Principle (OCP)
-
-- A class should be open for extension but closed for modification.
-- Instead of modifying existing code, we should extend it using inheritance or polymorphism.
-
-**Bad Design:**
-```java
-class Shape {
-    String type;
-}
-class AreaCalculator {
-    double calculateArea(Shape shape) {
-        if (shape.type.equals("Circle")) { /* Logic */ }
-        else if (shape.type.equals("Rectangle")) { /* Logic */ }
+    public void SaveToFile(string fileName)
+    {
+        Console.WriteLine($"Saving report to {fileName}");
     }
 }
 ```
+**Problem**: The `Report` class has two responsibilities:  
+1. Generating the report.  
+2. Saving the report to a file.  
 
-**Good Design (Following OCP using Polymorphism):**
-```java
-abstract class Shape { abstract double calculateArea(); }
-class Circle extends Shape { double calculateArea() { return /* Area Logic */; } }
-class Rectangle extends Shape { double calculateArea() { return /* Area Logic */; } }
-```
+### **Better Approach (SRP Applied)**
+```csharp
+public class ReportGenerator
+{
+    public string GenerateReport()
+    {
+        return "Report Data";
+    }
+}
 
-### L - Liskov Substitution Principle (LSP)
-
-- Subtypes should be replaceable for their base types without breaking the system.
-- A subclass should extend behavior without altering the parent’s expected behavior.
-
-**Bad Design (Violating LSP):**
-```java
-class Rectangle { void setWidth(int width); void setHeight(int height); }
-class Square extends Rectangle { 
-    void setWidth(int width) { this.height = width; this.width = width; }  // Unexpected behavior
+public class ReportSaver
+{
+    public void SaveToFile(string fileName, string reportData)
+    {
+        Console.WriteLine($"Saving report to {fileName}");
+    }
 }
 ```
+Now, `ReportGenerator` and `ReportSaver` handle their own responsibilities separately.
 
-**Good Design (Following LSP):**
-```java
-abstract class Shape { abstract void setSize(int size); }
-class Rectangle extends Shape { void setSize(int size) { /* Logic */ } }
-class Square extends Shape { void setSize(int size) { /* Logic */ } }
-```
+---
 
-### I - Interface Segregation Principle (ISP)
+## **2. Open/Closed Principle (OCP)**
+**Definition**: A class should be open for extension but closed for modification.
 
-- Avoid large interfaces that force classes to implement unnecessary methods.
-- Instead, use multiple smaller interfaces.
+### **Example in C# (Bad Design)**
+```csharp
+public class AreaCalculator
+{
+    public double CalculateArea(object shape)
+    {
+        if (shape is Circle)
+            return Math.PI * ((Circle)shape).Radius * ((Circle)shape).Radius;
 
-**Bad Design (Violating ISP):**
-```java
-interface Worker {
-    void work();
-    void eat();
-}
-class Robot implements Worker { 
-    void work() { /* OK */ }  
-    void eat() { /* Robots don't eat! */ } 
-}
-```
+        if (shape is Square)
+            return ((Square)shape).Side * ((Square)shape).Side;
 
-**Good Design (Following ISP):**
-```java
-interface Workable { void work(); }
-interface Eatable { void eat(); }
-class Human implements Workable, Eatable { /* Implements both */ }
-class Robot implements Workable { /* Only work() */ }
-```
-
-### D - Dependency Inversion Principle (DIP)
-
-- High-level modules should not depend on low-level modules. Both should depend on abstractions.
-- Use Dependency Injection (DI) to avoid direct dependencies.
-
-**Bad Design (Violating DIP):**
-```java
-class Keyboard { /* Keyboard-specific code */ }
-class Computer {
-    private Keyboard keyboard = new Keyboard(); // Hard dependency
+        return 0;
+    }
 }
 ```
+**Problem**: Every time a new shape is added, we need to modify `CalculateArea`, violating OCP.
 
-**Good Design (Following DIP using Abstraction & DI):**
-```java
-interface InputDevice { /* Abstract */ }
-class Keyboard implements InputDevice { /* Implementation */ }
-class Computer {
-    private InputDevice inputDevice;
-    Computer(InputDevice device) { this.inputDevice = device; } // Dependency Injection
+### **Better Approach (OCP Applied)**
+```csharp
+public interface IShape
+{
+    double CalculateArea();
+}
+
+public class Circle : IShape
+{
+    public double Radius { get; set; }
+    public double CalculateArea() => Math.PI * Radius * Radius;
+}
+
+public class Square : IShape
+{
+    public double Side { get; set; }
+    public double CalculateArea() => Side * Side;
+}
+
+public class AreaCalculator
+{
+    public double CalculateArea(IShape shape) => shape.CalculateArea();
 }
 ```
+Now, we can extend the system by adding new shapes without modifying `AreaCalculator`.
+
+---
+
+## **3. Liskov Substitution Principle (LSP)**
+**Definition**: Subtypes should be replaceable by their base types without altering correctness.
+
+### **Example in C# (Bad Design)**
+```csharp
+public class Rectangle
+{
+    public virtual int Width { get; set; }
+    public virtual int Height { get; set; }
+    public int GetArea() => Width * Height;
+}
+
+public class Square : Rectangle
+{
+    public override int Width 
+    { 
+        set { base.Width = base.Height = value; } 
+    }
+
+    public override int Height 
+    { 
+        set { base.Width = base.Height = value; } 
+    }
+}
+```
+**Problem**: If we assign a `Rectangle` object to a `Square`, it breaks expected behavior.
+
+### **Better Approach (LSP Applied)**
+```csharp
+public interface IShape
+{
+    int GetArea();
+}
+
+public class Rectangle : IShape
+{
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public int GetArea() => Width * Height;
+}
+
+public class Square : IShape
+{
+    public int Side { get; set; }
+    public int GetArea() => Side * Side;
+}
+```
+Now, both `Rectangle` and `Square` can be used interchangeably via `IShape`.
+
+---
+
+## **4. Interface Segregation Principle (ISP)**
+**Definition**: A class should not be forced to implement interfaces it does not use.
+
+### **Example in C# (Bad Design)**
+```csharp
+public interface IWorker
+{
+    void Work();
+    void Eat();
+}
+
+public class Robot : IWorker
+{
+    public void Work() { Console.WriteLine("Robot working..."); }
+    public void Eat() { throw new NotImplementedException(); }  // Not applicable to robots!
+}
+```
+**Problem**: `Robot` does not need `Eat()` but is forced to implement it.
+
+### **Better Approach (ISP Applied)**
+```csharp
+public interface IWorkable
+{
+    void Work();
+}
+
+public interface IEatable
+{
+    void Eat();
+}
+
+public class Human : IWorkable, IEatable
+{
+    public void Work() { Console.WriteLine("Human working..."); }
+    public void Eat() { Console.WriteLine("Human eating..."); }
+}
+
+public class Robot : IWorkable
+{
+    public void Work() { Console.WriteLine("Robot working..."); }
+}
+```
+Now, `Robot` implements only the `IWorkable` interface, following ISP.
+
+---
+
+## **5. Dependency Inversion Principle (DIP)**
+**Definition**: High-level modules should not depend on low-level modules. Both should depend on abstractions.
+
+### **Example in C# (Bad Design)**
+```csharp
+public class MySQLDatabase
+{
+    public void Save(string data) => Console.WriteLine("Saving data to MySQL");
+}
+
+public class DataManager
+{
+    private MySQLDatabase _database = new MySQLDatabase();
+    
+    public void SaveData(string data)
+    {
+        _database.Save(data);
+    }
+}
+```
+**Problem**: `DataManager` depends directly on `MySQLDatabase`, making it hard to switch databases.
+
+### **Better Approach (DIP Applied)**
+```csharp
+public interface IDatabase
+{
+    void Save(string data);
+}
+
+public class MySQLDatabase : IDatabase
+{
+    public void Save(string data) => Console.WriteLine("Saving data to MySQL");
+}
+
+public class DataManager
+{
+    private readonly IDatabase _database;
+    
+    public DataManager(IDatabase database)
+    {
+        _database = database;
+    }
+
+    public void SaveData(string data)
+    {
+        _database.Save(data);
+    }
+}
+```
+Now, `DataManager` depends on `IDatabase`, allowing different implementations like SQL Server, MongoDB, etc.
+
+---
+
+## **Summary of SOLID Principles**
+| Principle | Description | Benefit |
+|-----------|------------|---------|
+| **S**ingle Responsibility | A class should have only one reason to change | Improves maintainability |
+| **O**pen/Closed | Classes should be open for extension, but closed for modification | Increases flexibility |
+| **L**iskov Substitution | Subtypes must be replaceable by their base types | Prevents unexpected behaviors |
+| **I**nterface Segregation | Don't force classes to implement unused methods | Increases code clarity |
+| **D**ependency Inversion | Depend on abstractions, not concretions | Improves scalability |
 
 ## 2. Understanding Other 5 Important Principles
 
