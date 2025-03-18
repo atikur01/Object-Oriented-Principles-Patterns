@@ -170,37 +170,350 @@ if (x > 10 && x < 20) System.out.println("Valid");
 
 ## 3. Understanding Creational Design Patterns
 
-These patterns help create objects efficiently.
+# Creational Design Patterns
 
-### 1. Singleton
+Creational design patterns are used in software development to handle object creation mechanisms in a flexible and reusable way. Instead of instantiating objects directly using the `new` keyword, these patterns provide ways to create objects while keeping the code loosely coupled.
 
-- Ensures only one instance of a class exists.
+## Types of Creational Design Patterns
 
-```java
-class Singleton {
-    private static Singleton instance;
-    private Singleton() {} // Private constructor
-    public static Singleton getInstance() {
-        if (instance == null) instance = new Singleton();
-        return instance;
+- Singleton Pattern
+- Factory Method Pattern
+- Abstract Factory Pattern
+- Builder Pattern
+- Prototype Pattern
+
+### 1. Singleton Pattern
+
+Ensures that a class has only one instance and provides a global point of access to it.
+
+**When to Use?**
+
+- When exactly one instance of a class is required (e.g., database connection, logging, configuration settings).
+
+**Implementation (C#)**
+
+```csharp
+public class Singleton
+{
+    private static Singleton instance = null;
+    private static readonly object padlock = new object();
+
+    Singleton() { }
+
+    public static Singleton Instance
+    {
+        get
+        {
+            lock (padlock)
+            {
+                if (instance == null)
+                {
+                    instance = new Singleton();
+                }
+                return instance;
+            }
+        }
     }
 }
 ```
 
-### 2. Factory Method
+**Key Points**
 
-- Creates objects without exposing the logic.
+- ✅ Private constructor to restrict direct object creation
+- ✅ A static method to provide the single instance
+- ✅ Ensures only one instance exists throughout the program
 
-```java
-interface Shape { void draw(); }
-class Circle implements Shape { void draw() { System.out.println("Circle"); } }
-class ShapeFactory { 
-    static Shape getShape(String type) { 
-        if (type.equals("Circle")) return new Circle(); 
-        return null; 
+### 2. Factory Method Pattern
+
+Defines an interface for creating an object, but lets subclasses decide which class to instantiate.
+
+**When to Use?**
+
+- When the object creation logic is complex and should not be exposed.
+- When different types of objects need to be created dynamically.
+
+**Implementation (C#)**
+
+```csharp
+public abstract class Product
+{
+    public abstract void Use();
+}
+
+public class ConcreteProductA : Product
+{
+    public override void Use()
+    {
+        Console.WriteLine("Using Product A");
+    }
+}
+
+public class ConcreteProductB : Product
+{
+    public override void Use()
+    {
+        Console.WriteLine("Using Product B");
+    }
+}
+
+public class Factory
+{
+    public static Product CreateProduct(string type)
+    {
+        if (type == "A")
+        {
+            return new ConcreteProductA();
+        }
+        else if (type == "B")
+        {
+            return new ConcreteProductB();
+        }
+        else
+        {
+            throw new ArgumentException("Invalid type");
+        }
     }
 }
 ```
+
+**Key Points**
+
+- ✅ Abstract class defines the interface
+- ✅ Concrete classes implement the interface
+- ✅ Factory method decides which object to create
+
+### 3. Abstract Factory Pattern
+
+Provides an interface for creating families of related objects without specifying their concrete classes.
+
+**When to Use?**
+
+- When multiple related objects need to be created without specifying their exact class.
+- When different groups of objects need to be instantiated based on configuration.
+
+**Implementation (C#)**
+
+```csharp
+// Abstract Factory
+public interface IGUIFactory
+{
+    IButton CreateButton();
+    ICheckbox CreateCheckbox();
+}
+
+// Concrete Factories
+public class WindowsFactory : IGUIFactory
+{
+    public IButton CreateButton()
+    {
+        return new WindowsButton();
+    }
+
+    public ICheckbox CreateCheckbox()
+    {
+        return new WindowsCheckbox();
+    }
+}
+
+public class MacOSFactory : IGUIFactory
+{
+    public IButton CreateButton()
+    {
+        return new MacButton();
+    }
+
+    public ICheckbox CreateCheckbox()
+    {
+        return new MacCheckbox();
+    }
+}
+
+// Products
+public interface IButton
+{
+    void Render();
+}
+
+public interface ICheckbox
+{
+    void Check();
+}
+
+public class WindowsButton : IButton
+{
+    public void Render()
+    {
+        Console.WriteLine("Rendering Windows Button");
+    }
+}
+
+public class WindowsCheckbox : ICheckbox
+{
+    public void Check()
+    {
+        Console.WriteLine("Checking Windows Checkbox");
+    }
+}
+
+public class MacButton : IButton
+{
+    public void Render()
+    {
+        Console.WriteLine("Rendering Mac Button");
+    }
+}
+
+public class MacCheckbox : ICheckbox
+{
+    public void Check()
+    {
+        Console.WriteLine("Checking Mac Checkbox");
+    }
+}
+
+// Client Code
+public class Application
+{
+    private readonly IGUIFactory factory;
+
+    public Application(IGUIFactory factory)
+    {
+        this.factory = factory;
+    }
+
+    public void CreateUI()
+    {
+        var button = factory.CreateButton();
+        var checkbox = factory.CreateCheckbox();
+        button.Render();
+        checkbox.Check();
+    }
+}
+```
+
+**Key Points**
+
+- ✅ Defines an interface for creating related objects
+- ✅ Concrete factories implement the interface
+- ✅ Ensures related objects are used together
+
+### 4. Builder Pattern
+
+Separates object construction from its representation, allowing the same construction process to create different representations.
+
+**When to Use?**
+
+- When an object has many optional parameters.
+- When constructing an object step-by-step is necessary.
+
+**Implementation (C#)**
+
+```csharp
+public class Product
+{
+    public string PartA { get; set; }
+    public string PartB { get; set; }
+
+    public void Show()
+    {
+        Console.WriteLine($"Product with: {PartA}, {PartB}");
+    }
+}
+
+public interface IBuilder
+{
+    void SetPartA(string value);
+    void SetPartB(string value);
+    Product GetResult();
+}
+
+public class ConcreteBuilder : IBuilder
+{
+    private Product product = new Product();
+
+    public void SetPartA(string value)
+    {
+        product.PartA = value;
+    }
+
+    public void SetPartB(string value)
+    {
+        product.PartB = value;
+    }
+
+    public Product GetResult()
+    {
+        return product;
+    }
+}
+
+public class Director
+{
+    private readonly IBuilder builder;
+
+    public Director(IBuilder builder)
+    {
+        this.builder = builder;
+    }
+
+    public Product Construct()
+    {
+        builder.SetPartA("Engine");
+        builder.SetPartB("Wheels");
+        return builder.GetResult();
+    }
+}
+```
+
+**Key Points**
+
+- ✅ Separates complex object construction from the representation
+- ✅ Ensures step-by-step creation of objects
+- ✅ Provides different configurations of objects
+
+### 5. Prototype Pattern
+
+Creates new objects by copying an existing object (cloning) instead of creating from scratch.
+
+**When to Use?**
+
+- When object creation is expensive (e.g., deep-copying, cloning).
+- When you need exact copies of existing objects.
+
+**Implementation (C#)**
+
+```csharp
+public class Prototype
+{
+    public string Data { get; set; }
+
+    public Prototype Clone()
+    {
+        return (Prototype) this.MemberwiseClone();
+    }
+}
+
+// Client Code
+var original = new Prototype { Data = "Hello" };
+var copy = original.Clone();
+Console.WriteLine(copy.Data); // Output: Hello
+```
+
+**Key Points**
+
+- ✅ Reduces object creation cost
+- ✅ Supports cloning instead of new instantiation
+- ✅ Ensures same structure with different instances
+
+### Summary Table
+
+| Pattern         | Purpose                             |
+| --------------- | ----------------------------------- |
+| Singleton       | Ensures only one instance exists    |
+| Factory Method  | Lets subclasses decide object creation |
+| Abstract Factory| Creates families of related objects |
+| Builder         | Constructs complex objects step-by-step |
+| Prototype       | Creates clones of objects instead of new instances |
 
 ## 4. UML Diagrams (Use Case, Class, and Sequence Diagrams)
 
