@@ -260,50 +260,272 @@ Now, `DataManager` depends on `IDatabase`, allowing different implementations li
 
 ## 2. Understanding Other 5 Important Principles
 
-These additional principles further enhance OOP design:
+Apart from the **SOLID** principles, there are other crucial design principles in software development that improve maintainability, scalability, and flexibility. Here are five more important principles:
 
-### 1. DRY (Don't Repeat Yourself)
+---
 
-- Avoid code duplication by using functions, inheritance, or reusable components.
+## **1. DRY (Don't Repeat Yourself)**
+**Definition**: Avoid duplication in code by abstracting reusable logic.
 
-**Bad:**
-```java
-class Dog { void bark() { System.out.println("Bark"); } }
-class Cat { void meow() { System.out.println("Meow"); } }
+### **Example in C# (Bad Design - Code Duplication)**
+```csharp
+public class UserManager
+{
+    public void RegisterUser(string username, string email)
+    {
+        if (!email.Contains("@"))
+        {
+            throw new Exception("Invalid email");
+        }
+        Console.WriteLine("User Registered");
+    }
+
+    public void UpdateUser(string username, string email)
+    {
+        if (!email.Contains("@"))
+        {
+            throw new Exception("Invalid email");
+        }
+        Console.WriteLine("User Updated");
+    }
+}
 ```
+**Problem**: The email validation logic is duplicated.
 
-**Good (Avoid Repetition Using Inheritance):**
-```java
-class Animal { void makeSound() { /* Common Logic */ } }
-class Dog extends Animal { void makeSound() { System.out.println("Bark"); } }
-class Cat extends Animal { void makeSound() { System.out.println("Meow"); } }
+### **Better Approach (DRY Applied)**
+```csharp
+public class Validator
+{
+    public static void ValidateEmail(string email)
+    {
+        if (!email.Contains("@"))
+        {
+            throw new Exception("Invalid email");
+        }
+    }
+}
+
+public class UserManager
+{
+    public void RegisterUser(string username, string email)
+    {
+        Validator.ValidateEmail(email);
+        Console.WriteLine("User Registered");
+    }
+
+    public void UpdateUser(string username, string email)
+    {
+        Validator.ValidateEmail(email);
+        Console.WriteLine("User Updated");
+    }
+}
 ```
+✅ **Benefit**: The validation logic is now centralized and reusable.
 
-### 2. KISS (Keep It Simple, Stupid)
+---
 
-- Avoid complex designs when a simpler solution exists.
+## **2. KISS (Keep It Simple, Stupid)**
+**Definition**: Write simple, clear, and easy-to-understand code. Avoid over-engineering.
 
-**Bad (Overcomplicated Logic):**
-```java
-if (x > 10) { if (x < 20) { System.out.println("Valid"); } }
+### **Example in C# (Bad Design - Over-Complex Code)**
+```csharp
+public class Calculator
+{
+    public int Calculate(int a, int b, string operation)
+    {
+        if (operation == "add")
+        {
+            return a + b;
+        }
+        else if (operation == "subtract")
+        {
+            return a - b;
+        }
+        else if (operation == "multiply")
+        {
+            return a * b;
+        }
+        else if (operation == "divide")
+        {
+            return a / b;
+        }
+        else
+        {
+            throw new Exception("Invalid Operation");
+        }
+    }
+}
 ```
+**Problem**: This method has too many conditionals and can be simplified.
 
-**Good (Simplified Logic):**
-```java
-if (x > 10 && x < 20) System.out.println("Valid");
+### **Better Approach (KISS Applied)**
+```csharp
+public class Calculator
+{
+    public int Add(int a, int b) => a + b;
+    public int Subtract(int a, int b) => a - b;
+    public int Multiply(int a, int b) => a * b;
+    public int Divide(int a, int b) => a / b;
+}
 ```
+✅ **Benefit**: The new design is simpler and more readable.
 
-### 3. YAGNI (You Ain't Gonna Need It)
+---
 
-- Don't add features until they're necessary.
+## **3. YAGNI (You Ain't Gonna Need It)**
+**Definition**: Don't add functionality until it's necessary.
 
-### 4. Law of Demeter (LoD)
+### **Example in C# (Bad Design - Unnecessary Code)**
+```csharp
+public class UserManager
+{
+    public void RegisterUser(string username, string email)
+    {
+        Console.WriteLine("User Registered");
+    }
 
-- An object should not "talk" to internal objects deeply (`objA.getB().getC().doSomething()` is bad).
+    public void GenerateUserReport(string username)
+    {
+        Console.WriteLine("Generating User Report..."); // Not required yet
+    }
+}
+```
+**Problem**: `GenerateUserReport` is implemented but not needed yet.
 
-### 5. Composition Over Inheritance
+### **Better Approach (YAGNI Applied)**
+```csharp
+public class UserManager
+{
+    public void RegisterUser(string username, string email)
+    {
+        Console.WriteLine("User Registered");
+    }
+}
+```
+✅ **Benefit**: Avoids unnecessary complexity and keeps the codebase clean.
 
-- Favor composition (has-a relationship) over inheritance (is-a).
+---
+
+## **4. Law of Demeter (LoD)**
+**Definition**: A class should not access methods of an object that it does not directly own.
+
+### **Example in C# (Bad Design - Breaking LoD)**
+```csharp
+public class Address
+{
+    public string City { get; set; }
+}
+
+public class Customer
+{
+    public Address Address { get; set; }
+}
+
+public class Order
+{
+    public void PrintCustomerCity(Customer customer)
+    {
+        Console.WriteLine(customer.Address.City); // Directly accessing inner objects
+    }
+}
+```
+**Problem**: `Order` is reaching into `Customer.Address.City`, violating the Law of Demeter.
+
+### **Better Approach (LoD Applied)**
+```csharp
+public class Customer
+{
+    private Address _address;
+
+    public Customer(Address address)
+    {
+        _address = address;
+    }
+
+    public string GetCity()
+    {
+        return _address.City;
+    }
+}
+
+public class Order
+{
+    public void PrintCustomerCity(Customer customer)
+    {
+        Console.WriteLine(customer.GetCity()); // Accessing only what it needs
+    }
+}
+```
+✅ **Benefit**: Reduces dependencies between classes, improving maintainability.
+
+---
+
+## **5. Composition Over Inheritance**
+**Definition**: Prefer composition (has-a) over inheritance (is-a) for greater flexibility.
+
+### **Example in C# (Bad Design - Deep Inheritance)**
+```csharp
+public class Bird
+{
+    public void Fly() => Console.WriteLine("Flying");
+}
+
+public class Penguin : Bird
+{
+    // Penguins can't fly!
+}
+```
+**Problem**: Penguins inherit `Fly()` but shouldn’t be able to fly.
+
+### **Better Approach (Composition Applied)**
+```csharp
+public interface IFlyable
+{
+    void Fly();
+}
+
+public class CanFly : IFlyable
+{
+    public void Fly() => Console.WriteLine("Flying");
+}
+
+public class Bird
+{
+    protected IFlyable _flyable;
+
+    public Bird(IFlyable flyable)
+    {
+        _flyable = flyable;
+    }
+
+    public void TryToFly()
+    {
+        _flyable?.Fly();
+    }
+}
+
+public class Penguin : Bird
+{
+    public Penguin() : base(null) { } // Penguins don't fly
+}
+
+public class Sparrow : Bird
+{
+    public Sparrow() : base(new CanFly()) { }
+}
+```
+✅ **Benefit**: More flexibility—penguins don't inherit unnecessary behavior.
+
+---
+
+## **Summary of the Five Principles**
+| Principle | Description | Benefit |
+|-----------|-------------|---------|
+| **DRY** (Don't Repeat Yourself) | Avoid duplication by reusing code | Easier maintenance |
+| **KISS** (Keep It Simple, Stupid) | Write simple, readable code | Better readability |
+| **YAGNI** (You Ain't Gonna Need It) | Don't add unneeded features | Prevents over-engineering |
+| **Law of Demeter** | Limit dependencies between classes | Reduces coupling |
+| **Composition Over Inheritance** | Favor composition over deep inheritance trees | Increases flexibility |
 
 ## 3. Understanding Creational Design Patterns
 
