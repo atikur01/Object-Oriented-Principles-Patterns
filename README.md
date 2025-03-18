@@ -258,7 +258,7 @@ Now, `DataManager` depends on `IDatabase`, allowing different implementations li
 | **I**nterface Segregation | Don't force classes to implement unused methods | Increases code clarity |
 | **D**ependency Inversion | Depend on abstractions, not concretions | Improves scalability |
 
-## 2. Understanding Other 5 Important Principles
+# 2. Understanding Other 5 Important Principles
 
 Apart from the **SOLID** principles, there are other crucial design principles in software development that improve maintainability, scalability, and flexibility. Here are five more important principles:
 
@@ -527,9 +527,9 @@ public class Sparrow : Bird
 | **Law of Demeter** | Limit dependencies between classes | Reduces coupling |
 | **Composition Over Inheritance** | Favor composition over deep inheritance trees | Increases flexibility |
 
-## 3. Understanding Creational Design Patterns
+# 3. Understanding Creational Design Patterns
 
-# Creational Design Patterns
+## Creational Design Patterns
 
 Creational design patterns are used in software development to handle object creation mechanisms in a flexible and reusable way. Instead of instantiating objects directly using the `new` keyword, these patterns provide ways to create objects while keeping the code loosely coupled.
 
